@@ -1,0 +1,36 @@
+version: '3'
+
+networks:
+  caddy-cni:
+    name: caddy-cni
+    driver: bridge
+    external: true
+
+volumes:
+  adminer-csi:
+    name: adminer-csi
+    driver: local
+
+services:
+  caddy:
+    init: true
+    image: docker.io/library/caddy:2-alpine
+    container_name: caddy
+    networks:
+      - caddy-cni
+    ports:
+      - 8090:80
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ./caddy/conf.d:/etc/caddy/conf.d
+    volumes_from:
+      - adminer:ro
+
+  adminer:
+    init: true
+    image: docker.io/library/adminer:fastcgi
+    container_name: adminer
+    networks:
+      - caddy-cni
+    volumes:
+      - adminer-csi:/var/www/html:ro
